@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -15,11 +16,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class NotificationTask {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long chatId;
     private String message;
     private LocalDateTime sendAt;
+
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
     private boolean sent;
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.constant.Constant;
 import pro.sky.telegrambot.model.NotificationTask;
+import pro.sky.telegrambot.provider.SendMessageProvider;
 import pro.sky.telegrambot.repository.NotificationTaskRepository;
 
 import java.time.LocalDateTime;
@@ -21,17 +22,26 @@ public class NotificationTaskService {
     private NotificationTaskRepository notificationTaskRepository;
 
     public SendMessage createTask(Long chatId, String text) {
-        log.info("Creating new task for chatId = {} with text = {}", chatId, text);
+        log.info("Creating new task for chatId = '{}' with text = '{}'", chatId, text);
         Matcher matcher = Pattern.compile(Constant.MESSAGE_REGEX).matcher(text);
+        if (!matcher.matches()) {
+            log.error("Fail parse message '{}' from chatId = '{}'! We're not suppose to be here!!!", text, chatId);
+        }
 
+        LocalDateTime sendAt = LocalDateTime.parse(matcher.group(1), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
+        if (sendAt.isBefore(LocalDateTime.now())) {
+            log.warn("Date '{}' is in the past! chatId = '{}'", matcher.group(1), chatId);
+            return SendMessageProvider.getDateInThePastMessage(chatId, matcher.group(1));
+        }
         notificationTaskRepository
                 .save(NotificationTask
                         .builder()
                         .chatId(chatId)
-                        .sendAt(LocalDateTime.parse(matcher.group(1), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")))
-                        .message(matcher.group(2))
+                        .sendAt(sendAt)
+                        .message(matcher.group(3))
                         .build());
 
-        return new SendMessage(chatId, "Создано напоминание \"%s\", дата напоминания: \"%s\"".formatted(matcher.group(2), matcher.group(1)));
+        log.info("Created new task for chatId = '{}' with text = '{}'", chatId, text);
+        return SendMessageProvider.successCreatedTaskMessage(chatId, matcher.group(1), matcher.group(3));
     }
 }

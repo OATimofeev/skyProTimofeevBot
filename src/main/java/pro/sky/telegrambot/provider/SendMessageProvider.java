@@ -16,4 +16,12 @@ public class SendMessageProvider {
                 "\"01.01.2022 20:00 Сделать домашнюю работу\"\n\n" +
                 "И в указанные дату и время я напомню тебе о делах!");
     }
+
+    public static SendMessage getDateInThePastMessage(Long chatId, String date) {
+        return new SendMessage(chatId, "Извини, но дата \"%s\" - в прошлом, я не смогу тебе напомнить!".formatted(date));
+    }
+
+    public static SendMessage successCreatedTaskMessage(Long chatId, String date, String message) {
+        return new SendMessage(chatId, "Создано напоминание \"%s\", дата напоминания: \"%s\"".formatted(message, date));
+    }
 }
