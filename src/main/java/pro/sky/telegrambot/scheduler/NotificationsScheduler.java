@@ -20,7 +20,10 @@ public class NotificationsScheduler {
     @Autowired
     private NotificationTaskService service;
 
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(
+            cron = "${app.notifications.cron}",
+            zone = "${app.notifications.zone}"
+    )
     public void sendNotifications() {
         service.getNotificationTaskById(LocalDateTime.now()).forEach(x ->
         {
