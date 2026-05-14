@@ -3,7 +3,7 @@
 Учебный Telegram-бот на Spring Boot, который принимает сообщения в формате `dd.MM.yyyy HH:mm Текст напоминания`,
 сохраняет задачу в PostgreSQL и отправляет напоминание по расписанию через scheduler. В проекте уже вынесены слои
 listener, service, repository, provider и scheduler, а cron-настройка и локальные секреты конфигурируются через
-`application.properties` и внешний `env/.env.properties`.[web:342][web:249][web:415]
+`application.properties` и внешний `env/.env.properties`.
 
 ## Возможности
 
@@ -54,7 +54,7 @@ src/main/java/pro/sky/telegrambot
 
 Основной конфиг лежит в `src/main/resources/application.properties`, а локальные секреты подключаются через
 `spring.config.import=optional:file:env/.env.properties`. Такой способ соответствует externalized configuration в Spring
-Boot и позволяет не хранить токены/пароли в git.[web:415][web:416]
+Boot и позволяет не хранить токены/пароли в git.
 
 ### `application.properties`
 
@@ -112,7 +112,7 @@ DATABASE telegramBot;
 2. `TelegramBotUpdatesListener` принимает update и проверяет формат текста.
 3. `NotificationTaskService` парсит дату, валидирует её и сохраняет задачу в БД.
 4. `NotificationsScheduler` по cron выбирает все задачи с `sendAt <= now` и `sent = false`.
-5. После успешной отправки задача помечается как отправленная.[web:249][web:342]
+5. После успешной отправки задача помечается как отправленная.
 
 ## Тесты
 
