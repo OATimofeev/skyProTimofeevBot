@@ -11,13 +11,13 @@ import pro.sky.telegrambot.repository.NotificationTaskRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
 @Slf4j
 public class NotificationTaskService {
-
     @Autowired
     private NotificationTaskRepository notificationTaskRepository;
 
@@ -43,5 +43,15 @@ public class NotificationTaskService {
 
         log.info("Created new task for chatId = '{}' with text = '{}'", chatId, text);
         return SendMessageProvider.successCreatedTaskMessage(chatId, matcher.group(1), matcher.group(3));
+    }
+
+    public List<NotificationTask> getNotificationTaskById(LocalDateTime sendAt) {
+        log.info("Getting all tasks for date-time {}", sendAt);
+        return notificationTaskRepository.findBySendAtLessThanEqualAndSentFalse(sendAt);
+    }
+
+    public void markAsSentById(Long id) {
+        log.info("Mark as sent for taskId {}", id);
+        notificationTaskRepository.markAsSentById(id);
     }
 }

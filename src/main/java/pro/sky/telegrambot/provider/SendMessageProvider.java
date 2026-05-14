@@ -1,6 +1,7 @@
 package pro.sky.telegrambot.provider;
 
 import com.pengrad.telegrambot.request.SendMessage;
+import pro.sky.telegrambot.model.NotificationTask;
 
 public class SendMessageProvider {
 
@@ -23,5 +24,11 @@ public class SendMessageProvider {
 
     public static SendMessage successCreatedTaskMessage(Long chatId, String date, String message) {
         return new SendMessage(chatId, "Создано напоминание \"%s\", дата напоминания: \"%s\"".formatted(message, date));
+    }
+
+    public static SendMessage notifyMessage(NotificationTask task) {
+        return new SendMessage(task.getChatId(), "Напоминаю!\n\n" +
+                task.getSendAt() + "\n\n" +
+                task.getMessage());
     }
 }
