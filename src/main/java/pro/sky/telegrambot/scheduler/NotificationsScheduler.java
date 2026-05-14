@@ -1,8 +1,8 @@
 package pro.sky.telegrambot.scheduler;
 
 import com.pengrad.telegrambot.TelegramBot;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import pro.sky.telegrambot.provider.SendMessageProvider;
@@ -12,28 +12,26 @@ import java.time.LocalDateTime;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class NotificationsScheduler {
 
-    @Autowired
-    private TelegramBot telegramBot;
-
-    @Autowired
-    private NotificationTaskService service;
+    private final TelegramBot telegramBot;
+    private final NotificationTaskService notificationTaskService;
 
     @Scheduled(
             cron = "${app.notifications.cron}",
             zone = "${app.notifications.zone}"
     )
     public void sendNotifications() {
-        service.getNotificationTaskById(LocalDateTime.now()).forEach(x ->
+        notificationTaskService.findDueTasks(LocalDateTime.now()).forEach(x ->
         {
             try {
                 telegramBot
                         .execute(SendMessageProvider.notifyMessage(x));
-                service
+                notificationTaskService
                         .markAsSentById(x.getId());
             } catch (Exception e) {
-                log.error("Error with processing send notification: {}, chatId {}, taskId {}", e, x.getChatId(), x.getId());
+                log.error("Error with processing send notification: chatId '{}', taskId '{}'. Stacktrace: ", x.getChatId(), x.getId(), e);
             }
         });
     }

@@ -1,8 +1,8 @@
 package pro.sky.telegrambot.service;
 
 import com.pengrad.telegrambot.request.SendMessage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.constant.Constant;
 import pro.sky.telegrambot.model.NotificationTask;
@@ -13,19 +13,20 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class NotificationTaskService {
-    @Autowired
-    private NotificationTaskRepository notificationTaskRepository;
+
+    private final NotificationTaskRepository notificationTaskRepository;
 
     public SendMessage createTask(Long chatId, String text) {
         log.info("Creating new task for chatId = '{}' with text = '{}'", chatId, text);
-        Matcher matcher = Pattern.compile(Constant.MESSAGE_REGEX).matcher(text);
+        Matcher matcher = Constant.MESSAGE_PATTERN.matcher(text);
         if (!matcher.matches()) {
             log.error("Fail parse message '{}' from chatId = '{}'! We're not suppose to be here!!!", text, chatId);
+            return SendMessageProvider.getDefaultUnknownMessage(chatId);
         }
 
         LocalDateTime sendAt = LocalDateTime.parse(matcher.group(1), DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"));
@@ -38,14 +39,14 @@ public class NotificationTaskService {
                         .builder()
                         .chatId(chatId)
                         .sendAt(sendAt)
-                        .message(matcher.group(3))
+                        .message(matcher.group(2))
                         .build());
 
         log.info("Created new task for chatId = '{}' with text = '{}'", chatId, text);
-        return SendMessageProvider.successCreatedTaskMessage(chatId, matcher.group(1), matcher.group(3));
+        return SendMessageProvider.successCreatedTaskMessage(chatId, matcher.group(1), matcher.group(2));
     }
 
-    public List<NotificationTask> getNotificationTaskById(LocalDateTime sendAt) {
+    public List<NotificationTask> findDueTasks(LocalDateTime sendAt) {
         log.info("Getting all tasks for date-time {}", sendAt);
         return notificationTaskRepository.findBySendAtLessThanEqualAndSentFalse(sendAt);
     }

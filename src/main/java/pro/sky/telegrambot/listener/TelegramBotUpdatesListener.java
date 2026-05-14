@@ -4,8 +4,8 @@ import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pro.sky.telegrambot.constant.Constant;
 import pro.sky.telegrambot.provider.SendMessageProvider;
@@ -15,12 +15,11 @@ import java.util.List;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class TelegramBotUpdatesListener implements UpdatesListener {
 
-    @Autowired
-    private TelegramBot telegramBot;
-    @Autowired
-    private NotificationTaskService service;
+    private final TelegramBot telegramBot;
+    private final NotificationTaskService notificationTaskService;
 
     @PostConstruct
     public void init() {
@@ -32,18 +31,21 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         updates.forEach(update -> {
             log.info("Processing update: {}", update);
             try {
+                if (update.message() == null || update.message().text() == null) {
+                    return;
+                }
                 if (update.message().text().equals("/start")) {
                     telegramBot
                             .execute(SendMessageProvider.getWelcomeMessage(update.message().chat().id()));
-                } else if (update.message().text().matches(Constant.MESSAGE_REGEX)) {
+                } else if (Constant.MESSAGE_PATTERN.matcher(update.message().text()).matches()) {
                     telegramBot
-                            .execute(service.createTask(update.message().chat().id(), update.message().text()));
+                            .execute(notificationTaskService.createTask(update.message().chat().id(), update.message().text()));
                 } else {
                     telegramBot
                             .execute(SendMessageProvider.getDefaultUnknownMessage(update.message().chat().id()));
                 }
             } catch (Exception e) {
-                log.error("Error with processing update: {}, chatId {}", e, update.message().chat().id());
+                log.error("Error with processing update: chatId {}. Stacktrace: ", update.message().chat().id(), e);
             }
 
         });
