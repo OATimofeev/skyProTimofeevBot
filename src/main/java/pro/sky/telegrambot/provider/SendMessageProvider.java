@@ -3,6 +3,8 @@ package pro.sky.telegrambot.provider;
 import com.pengrad.telegrambot.request.SendMessage;
 import pro.sky.telegrambot.model.NotificationTask;
 
+import java.time.format.DateTimeFormatter;
+
 public class SendMessageProvider {
 
     public static SendMessage getWelcomeMessage(Long chatId) {
@@ -28,7 +30,7 @@ public class SendMessageProvider {
 
     public static SendMessage notifyMessage(NotificationTask task) {
         return new SendMessage(task.getChatId(), "Напоминаю!\n\n" +
-                task.getSendAt() + "\n\n" +
+                task.getSendAt().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + "\n\n" +
                 task.getMessage());
     }
 }
