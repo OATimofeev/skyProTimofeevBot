@@ -1,19 +1,19 @@
 # Telegram Bot Reminder
 
-Учебный Telegram-бот на Spring Boot, который принимает сообщения в формате `dd.MM.yyyy HH:mm Текст напоминания`,
-сохраняет задачу в PostgreSQL и отправляет напоминание по расписанию через scheduler. В проекте уже вынесены слои
-listener, service, repository, provider и scheduler, а cron-настройка и локальные секреты конфигурируются через
-`application.properties` и внешний `env/.env.properties`.
+A training Telegram bot built with Spring Boot that accepts messages in the format `dd.MM.yyyy HH:mm Reminder text`,
+stores tasks in PostgreSQL, and sends reminders on schedule via a scheduler. The project already separates layers into
+listener, service, repository, provider, and scheduler, while cron configuration and local secrets are configured via
+`application.properties` and external `env/.env.properties`.
 
-## Возможности
+## Features
 
-- Обрабатывает команду `/start` и отправляет приветственное сообщение.
-- Принимает напоминания в формате `14.05.2026 18:30 Сделать домашку`.
-- Сохраняет задачи в PostgreSQL через Spring Data JPA.
-- Запускает проверку просроченных/актуальных задач по cron-расписанию.
-- Отправляет уведомление в читаемом формате даты `dd.MM.yyyy HH:mm`.
+- Handles the `/start` command and sends a welcome message.
+- Accepts reminders in the format `14.05.2026 18:30 Do homework`.
+- Stores tasks in PostgreSQL via Spring Data JPA.
+- Runs a check for overdue/current tasks using a cron schedule.
+- Sends notifications in a readable date format `dd.MM.yyyy HH:mm`.
 
-## Стек
+## Stack
 
 - Java 17
 - Spring Boot 3.5
@@ -23,38 +23,38 @@ listener, service, repository, provider и scheduler, а cron-настройка
 - [java-telegram-bot-api](https://github.com/pengrad/java-telegram-bot-api)
 - JUnit 5 / Mockito
 
-## Структура проекта
+## Project Structure
 
 ```text
 src/main/java/pro/sky/telegrambot
-├── configuration     # Конфигурация TelegramBot
-├── constant          # Константы и regex Pattern
-├── listener          # Обработка входящих update'ов
+├── configuration     # TelegramBot configuration
+├── constant          # Constants and regex patterns
+├── listener          # Incoming updates handling
 ├── model             # JPA entity
-├── provider          # Формирование текстов и SendMessage
-├── repository        # Доступ к данным
-├── scheduler         # Отправка напоминаний по cron
-└── service           # Бизнес-логика
+├── provider          # Text and SendMessage building
+├── repository        # Data access
+├── scheduler         # Sending reminders via cron
+└── service           # Business logic
 ```
 
-## Формат сообщения
+## Message Format
 
-Бот ожидает сообщение вида:
+The bot expects a message in the following format:
 
 ```text
-14.05.2026 18:30 Сделать домашнюю работу
+14.05.2026 18:30 Do homework
 ```
 
-Где:
+Where:
 
-- `14.05.2026 18:30` — дата и время напоминания;
-- всё после пробела — текст напоминания.
+- `14.05.2026 18:30` — reminder date and time;
+- everything after the space — reminder text.
 
-## Конфигурация
+## Configuration
 
-Основной конфиг лежит в `src/main/resources/application.properties`, а локальные секреты подключаются через
-`spring.config.import=optional:file:env/.env.properties`. Такой способ соответствует externalized configuration в Spring
-Boot и позволяет не хранить токены/пароли в git.
+The main config is located in `src/main/resources/application.properties`, and local secrets are connected via
+`spring.config.import=optional:file:env/.env.properties`. This approach follows externalized configuration in Spring
+Boot and allows keeping tokens/passwords out of git.
 
 ### `application.properties`
 
@@ -81,51 +81,51 @@ telegram.bot.username=YOUR_TELEGRAM_BOT_USERNAME
 env/
 ```
 
-## Запуск проекта
+## Running the Project
 
-### 1. Поднять PostgreSQL
+### 1. Start PostgreSQL
 
-Создать базу данных:
+Create the database:
 
 ```sql
 CREATE
 DATABASE telegramBot;
 ```
 
-### 2. Создать локальный файл с секретами
+### 2. Create a local secrets file
 
-Создать файл `env/.env.properties` и заполнить его своими значениями.
+Create the file `env/.env.properties` and fill it with your values.
 
-### 3. Запустить приложение
+### 3. Run the application
 
-Через Maven:
+Via Maven:
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-Или из IntelliJ IDEA через `TelegramBotApplication`.
+Or from IntelliJ IDEA via `TelegramBotApplication`.
 
-## Как это работает
+## How It Works
 
-1. Пользователь отправляет сообщение в Telegram.
-2. `TelegramBotUpdatesListener` принимает update и проверяет формат текста.
-3. `NotificationTaskService` парсит дату, валидирует её и сохраняет задачу в БД.
-4. `NotificationsScheduler` по cron выбирает все задачи с `sendAt <= now` и `sent = false`.
-5. После успешной отправки задача помечается как отправленная.
+1. The user sends a message in Telegram.
+2. `TelegramBotUpdatesListener` receives the update and checks the text format.
+3. `NotificationTaskService` parses the date, validates it, and saves the task to the database.
+4. `NotificationsScheduler` selects all tasks with `sendAt <= now` and `sent = false` using cron.
+5. After successful sending, the task is marked as sent.
 
-## Тесты
+## Tests
 
-В проекте есть unit-тесты для service, scheduler и provider. Для запуска тестов использовать:
+The project includes unit tests for service, scheduler, and provider. To run tests, use:
 
 ```bash
 ./mvnw test
 ```
 
-## Дальнейшие улучшения
+## Future Improvements
 
-- Добавить кастомные исключения для ошибок парсинга и отправки.
-- Вынести форматтер даты в одну общую константу.
-- Добавить тесты для `TelegramBotUpdatesListener`.
-- Настроить отдельные профили для local/dev/prod.
-- Снизить уровень логирования на проде до `WARN`/`ERROR`.
+- Add custom exceptions for parsing and sending errors.
+- Move the date formatter into a single shared constant.
+- Add tests for `TelegramBotUpdatesListener`.
+- Configure separate profiles for local/dev/prod.
+- Reduce logging level in production to `WARN`/`ERROR`.
